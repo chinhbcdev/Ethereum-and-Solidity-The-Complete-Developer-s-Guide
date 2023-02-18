@@ -1,14 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-contract SimpleStorage {
-  uint256 value;
+contract Lottery {
+  address public manager;
+  address [] public  players;
 
-  function read() public view returns (uint256) {
-    return value;
+  constructor() {
+    manager=msg.sender;
   }
 
-  function write(uint256 newValue) public {
-    value = newValue;
+  function join() public payable{
+    require (msg.value == 1 ether);
+    players.push(msg.sender);
+    //payable (msg.sender).transfer(msg.value);
+  }
+  function getRand() private view returns (uint){
+    return uint(keccak256(abi.encodePacked(block.timestamp, block.number , block.number)));
+  }
+  function pickWinner() public {
+    require (msg.sender==manager);
+    address winner = players[getRand() % players.length];
+    payable(winner).transfer(address(this).balance);
   }
 }
